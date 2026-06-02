@@ -8,6 +8,11 @@ Rails.application.routes.draw do
   # Custom health check that performs a database query and returns connection status.
   get "health" => "health#show", as: :health_check
 
+  # Authentication routes
+  post "auth/signup", to: "authentication#signup"
+  post "auth/login", to: "authentication#login"
+  post "auth/logout", to: "authentication#logout"
+
   # Defines the root path route ("/")
   # root "posts#index"
 end

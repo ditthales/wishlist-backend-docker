@@ -1,4 +1,5 @@
 class HealthController < ApplicationController
+  skip_before_action :authenticate_request, only: [:show]
   def show
     begin
       # Execute a simple query to verify database connection and response
