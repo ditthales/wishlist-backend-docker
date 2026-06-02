@@ -13,6 +13,13 @@ Rails.application.routes.draw do
   post "auth/login", to: "authentication#login"
   post "auth/logout", to: "authentication#logout"
 
+  # Group management routes
+  resources :groups, only: [:index, :create, :update, :destroy] do
+    member do
+      post :add_user
+    end
+  end
+
   # Defines the root path route ("/")
   # root "posts#index"
 end
