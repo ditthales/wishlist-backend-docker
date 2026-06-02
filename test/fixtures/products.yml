@@ -2,8 +2,7 @@
 
 one:
   group: one
-  added_by_id: 
-  bought_by_id: 
+  added_by: one
   name: MyString
   description: MyText
   store_link: MyText
@@ -14,8 +13,7 @@ one:
 
 two:
   group: two
-  added_by_id: 
-  bought_by_id: 
+  added_by: two
   name: MyString
   description: MyText
   store_link: MyText
