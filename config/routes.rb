@@ -18,6 +18,15 @@ Rails.application.routes.draw do
     member do
       post :add_user
     end
+    # Nested product routes
+    resources :products, only: [:index, :create]
+  end
+
+  # Shallow product routes
+  resources :products, only: [:update, :destroy] do
+    member do
+      post :buy
+    end
   end
 
   # Defines the root path route ("/")

@@ -294,9 +294,198 @@ Convida e adiciona outro usuário cadastrado no sistema para o grupo especificad
 
 ---
 
+## 🎁 Gerenciamento de Produtos
+
+Todos os endpoints de produtos exigem que o usuário autenticado seja um **membro ativo** do grupo ao qual o produto pertence.
+
+### 1. Criar Produto dentro de um Grupo (`POST /groups/:group_id/products`)
+Adiciona um novo produto de desejo dentro do grupo. O usuário logado é definido como quem adicionou (`added_by`).
+
+- **URL:** `/groups/:group_id/products`
+- **Método:** `POST`
+- **Requisito de Autenticação:** Token JWT Válido
+- **Parâmetros no Corpo (JSON):**
+  | Campo | Tipo | Obrigatório | Descrição |
+  | :--- | :--- | :--- | :--- |
+  | `name` | String | Sim | Nome do produto/presente (ex: "PlayStation 5"). |
+  | `description` | String | Não | Detalhes adicionais (cor, tamanho, etc.). |
+  | `store_link` | String | Não | Link da loja online para compra. |
+  | `image_link` | String | Não | Link direto para uma imagem demonstrativa do produto. |
+  | `price` | Decimal | Não | Preço estimado (deve ser maior ou igual a 0). |
+  | `for_whom` | String | Não | Para quem é o presente (caso seja diferente de quem adicionou). |
+
+- **Resposta de Sucesso (`201 Created`):**
+  ```json
+  {
+    "id": 12,
+    "group_id": 5,
+    "added_by_id": 1,
+    "bought_by_id": null,
+    "name": "PlayStation 5",
+    "description": "Edição Standard",
+    "store_link": "https://example.com/ps5",
+    "image_link": "https://example.com/ps5.jpg",
+    "price": "499.99",
+    "for_whom": "João Silva",
+    "bought": false,
+    "created_at": "2026-06-02T14:00:20.123Z",
+    "updated_at": "2026-06-02T14:00:20.123Z",
+    "added_by": {
+      "id": 1,
+      "name": "João Silva",
+      "email": "joao@example.com"
+    }
+  }
+  ```
+
+### 2. Listar Produtos de um Grupo (`GET /groups/:group_id/products`)
+Retorna os produtos cadastrados no grupo, permitindo filtros de busca e paginação estruturada.
+
+- **URL:** `/groups/:group_id/products`
+- **Método:** `GET`
+- **Requisito de Autenticação:** Token JWT Válido
+- **Parâmetros de Query (Opcionais):**
+  | Parâmetro | Tipo | Padrão | Descrição |
+  | :--- | :--- | :--- | :--- |
+  | `page` | Integer | `1` | Página atual da listagem. |
+  | `per_page` | Integer | `10` | Quantidade de itens por página (máximo `100`). |
+  | `query` | String | - | Busca parcial insensível a maiúsculas (`name`, `description`, `for_whom`). |
+  | `bought` | Boolean | - | Filtrar por comprado (`true`) ou não comprado (`false`). |
+  | `added_by_id` | Integer | - | Filtrar por quem adicionou o produto. |
+  | `bought_by_id` | Integer | - | Filtrar por quem marcou o produto como comprado. |
+
+- **Resposta de Sucesso (`200 OK`):**
+  ```json
+  {
+    "products": [
+      {
+        "id": 12,
+        "group_id": 5,
+        "added_by_id": 1,
+        "bought_by_id": null,
+        "name": "PlayStation 5",
+        "description": "Edição Standard",
+        "store_link": "https://example.com/ps5",
+        "image_link": "https://example.com/ps5.jpg",
+        "price": "499.99",
+        "for_whom": "João Silva",
+        "bought": false,
+        "created_at": "2026-06-02T14:00:20.123Z",
+        "updated_at": "2026-06-02T14:00:20.123Z",
+        "added_by": {
+          "id": 1,
+          "name": "João Silva",
+          "email": "joao@example.com"
+        },
+        "bought_by": null
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "per_page": 10,
+      "total_pages": 1,
+      "total_count": 1,
+      "next_page": null,
+      "prev_page": null
+    }
+  }
+  ```
+
+### 3. Editar Produto (`PUT/PATCH /products/:id`)
+Permite alterar as propriedades de um produto.
+
+> [!IMPORTANT]
+> **Regra de Negócio:** O usuário solicitante deve ser um membro ativo do grupo do produto.
+
+- **URL:** `/products/:id`
+- **Método:** `PATCH` ou `PUT`
+- **Requisito de Autenticação:** Token JWT Válido
+- **Parâmetros no Corpo (JSON):**
+  | Campo | Tipo | Obrigatório | Descrição |
+  | :--- | :--- | :--- | :--- |
+  | `name` | String | Não | Novo nome para o produto. |
+  | `price` | Decimal | Não | Novo preço (maior ou igual a 0). |
+  | `description` | String | Não | Nova descrição. |
+  | ... | ... | ... | Demais campos do produto. |
+
+- **Resposta de Sucesso (`200 OK`):**
+  ```json
+  {
+    "id": 12,
+    "group_id": 5,
+    "added_by_id": 1,
+    "bought_by_id": null,
+    "name": "PlayStation 5 Slim",
+    "price": "449.99",
+    "description": "Edição Slim"
+  }
+  ```
+
+### 4. Deletar Produto (`DELETE /products/:id`)
+Remove o produto permanentemente da lista de desejos.
+
+> [!IMPORTANT]
+> **Regra de Negócio:** O usuário solicitante deve ser um membro ativo do grupo do produto.
+
+- **URL:** `/products/:id`
+- **Método:** `DELETE`
+- **Requisito de Autenticação:** Token JWT Válido
+- **Resposta de Sucesso (`200 OK`):**
+  ```json
+  {
+    "message": "Product deleted successfully"
+  }
+  ```
+
+### 5. Marcar/Desmarcar Produto como Comprado (`POST /products/:id/buy`)
+Marca um produto como comprado por você ou desmarca-o caso já estivesse marcado (Comportamento Toggle).
+
+> [!IMPORTANT]
+> **Regra de Negócio:**
+> - O usuário deve ser membro do grupo do produto.
+> - Se o produto **não** estiver comprado, marca como comprado (`bought: true`, `bought_by: current_user`).
+> - Se o produto **já** estiver comprado, desmarca para livre novamente (`bought: false`, `bought_by: nil`).
+
+- **URL:** `/products/:id/buy`
+- **Método:** `POST`
+- **Requisito de Autenticação:** Token JWT Válido
+- **Resposta de Sucesso (Marcar como Comprado - `200 OK`):**
+  ```json
+  {
+    "message": "Product marked as bought successfully",
+    "product": {
+      "id": 12,
+      "name": "PlayStation 5",
+      "bought": true,
+      "bought_by_id": 1,
+      "bought_by": {
+        "id": 1,
+        "name": "João Silva",
+        "email": "joao@example.com"
+      }
+    }
+  }
+  ```
+- **Resposta de Sucesso (Desmarcar/Remover Compra - `200 OK`):**
+  ```json
+  {
+    "message": "Product marked as unbought",
+    "product": {
+      "id": 12,
+      "name": "PlayStation 5",
+      "bought": false,
+      "bought_by_id": null,
+      "bought_by": null
+    }
+  }
+  ```
+
+---
+
 ## ⚠️ Códigos de Status Comuns
 
 - `401 Unauthorized`: Token ausente (`Missing Token`) ou inválido/expirado (`Invalid or Expired Token`).
-- `403 Forbidden`: O usuário está autenticado mas não tem permissão para a ação (regras de criador/membro).
-- `404 Not Found`: Recurso solicitado (grupo ou usuário a ser adicionado) não existe.
-- `422 Unprocessable Entity`: Falha nas validações de regras de negócio ou de presença de parâmetros.
+- `403 Forbidden`: O usuário está autenticado mas não pertence ao grupo relacionado.
+- `404 Not Found`: Recurso solicitado (grupo, produto ou usuário a adicionar) não existe.
+- `422 Unprocessable Entity`: Falha de validação dos campos (ex: preço negativo, nome do produto vazio).
+
