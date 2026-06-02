@@ -14,6 +14,7 @@ WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 
 # Instala as gems
+RUN bundle config set jobs $(nproc)
 RUN bundle install
 
 # Copia o resto do código da aplicação
