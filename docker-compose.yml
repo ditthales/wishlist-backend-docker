@@ -31,7 +31,7 @@ services:
         condition: service_healthy
     environment:
       - RAILS_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@db:5432/course_sphere_development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/wishlist_development
 
 volumes:
   postgres_data:
