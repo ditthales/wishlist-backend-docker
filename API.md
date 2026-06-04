@@ -143,12 +143,14 @@ Cria um novo grupo. O usuário autenticado se torna o criador e é adicionado au
   | Campo | Tipo | Obrigatório | Descrição |
   | :--- | :--- | :--- | :--- |
   | `name` | String | Sim | Nome do grupo (ex: "Amigo Oculto 2026"). |
+  | `emoji` | String | Não | Emoji que representa o grupo (ex: "🎄"). |
 
 - **Resposta de Sucesso (`201 Created`):**
   ```json
   {
     "id": 5,
     "name": "Amigo Oculto 2026",
+    "emoji": "🎄",
     "created_by_id": 1,
     "created_at": "2026-06-02T13:42:20.123Z",
     "updated_at": "2026-06-02T13:42:20.123Z",
@@ -199,13 +201,15 @@ Permite alterar as propriedades de um grupo.
 - **Parâmetros no Corpo (JSON):**
   | Campo | Tipo | Obrigatório | Descrição |
   | :--- | :--- | :--- | :--- |
-  | `name` | String | Sim | Novo nome para o grupo. |
+  | `name` | String | Não | Novo nome para o grupo. |
+  | `emoji` | String | Não | Novo emoji que representa o grupo (ex: "🎁"). |
 
 - **Resposta de Sucesso (`200 OK`):**
   ```json
   {
     "id": 5,
     "name": "Amigo Oculto Família",
+    "emoji": "🎁",
     "created_by_id": 1,
     "created_at": "2026-06-02T13:42:20.123Z",
     "updated_at": "2026-06-02T13:45:10.456Z"

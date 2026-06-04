@@ -91,6 +91,6 @@ class GroupsController < ApplicationController
   end
 
   def group_params
-    params.permit(:name)
+    params.permit(:name, :emoji)
   end
 end

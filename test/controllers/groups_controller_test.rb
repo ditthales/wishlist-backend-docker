@@ -26,12 +26,13 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create group and add creator as member" do
     assert_difference -> { Group.count } => 1, -> { GroupUser.count } => 1 do
-      post groups_url, params: { name: "Family Wishlist" }, headers: @headers_one
+      post groups_url, params: { name: "Family Wishlist", emoji: "🎄" }, headers: @headers_one
     end
     assert_response :created
 
     json_response = JSON.parse(response.body)
     assert_equal "Family Wishlist", json_response["name"]
+    assert_equal "🎄", json_response["emoji"]
     assert_equal @user_one.id, json_response["created_by_id"]
 
     # Verify membership
@@ -48,10 +49,12 @@ class GroupsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should allow creator to update group" do
-    patch group_url(@group_one), params: { name: "Updated Group Name" }, headers: @headers_one
+    patch group_url(@group_one), params: { name: "Updated Group Name", emoji: "🎁" }, headers: @headers_one
     assert_response :success
 
-    assert_equal "Updated Group Name", @group_one.reload.name
+    @group_one.reload
+    assert_equal "Updated Group Name", @group_one.name
+    assert_equal "🎁", @group_one.emoji
   end
 
   test "should forbid non-creator from updating group" do
